@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QGridLayout, QLabel, QWidget, QPushButton,
                              QLineEdit, QMessageBox)
+from PyQt6.QtCore import QCoreApplication
+
 from ManageDatabase import ManageBooksDatabase
 
 class ModelWindow(QMainWindow):
@@ -11,8 +13,8 @@ class ModelWindow(QMainWindow):
 
         self.x = 100
         self.y = 100
-        self.width = 500
-        self.height = 300
+        self.width = 700
+        self.height = 500
 
         # Set window parameters
         self.setWindowTitle(title)
@@ -45,9 +47,7 @@ class ModelWindow(QMainWindow):
         return string
 
     def show_info(self, title, message):
-        dialog = QMessageBox(parent=self, text=message)
-        dialog.setWindowTitle(title)
-        dialog.exec()   # Stores the return value for the button pressed
+        QMessageBox.about(None, title, message)
 
     def add_label(self, text):
         label = QLabel(text)
@@ -121,6 +121,8 @@ class AddBookWindow(ModelWindow):
             self.db_manager.edit_book(id, "author", author)
             response = self.db_manager.edit_book(id, "status", status)
 
+            self.show_info("Book Added/Edited", "Failed on add or edit book")
+
         if response:
             # Command successfull
             self.show_info("Book Added/Edited", "Book successfully added or edited")
@@ -165,6 +167,37 @@ class ViewBooksWindow(ModelWindow):
         self.list_books_label.setText("\n".join(books_string))
 
 
+class RemoveBookWindow(ModelWindow):
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
+
+        self.init_UI()
+
+    def init_UI(self):
+        layout = QGridLayout()
+
+        book_ID_label = self.add_label("Book ID")
+        self.book_ID_entry = self.add_line_edit()
+        issue_book_btn = self.add_button("Remove Book", self.remove_book)
+
+        layout.addWidget(book_ID_label, 0, 0)
+        layout.addWidget(self.book_ID_entry, 0, 1)
+        layout.addWidget(issue_book_btn, 1, 0)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        self.setCentralWidget(widget)
+
+    def remove_book(self):
+        id = self.book_ID_entry.text()
+        response = self.db_manager.delete_book(id)
+        if response:
+            self.show_info("Book deleted", "Book successfully deleted")
+        else:
+            self.show_info("Book deleted", "Failed on delete book")
+
+
 class IssueBookWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
         super().__init__(db_manager, title, styles)
@@ -192,9 +225,11 @@ class IssueBookWindow(ModelWindow):
         current_status = self.db_manager.get_property(id, "status")
         if current_status == "available":
             self.db_manager.edit_book(id, "status", "issued")
+
+            self.show_info("Book issued", "Book successfully issued")
         else:
-            pass
-            # Message failed issued
+            self.show_info("Book issued", "Failed on issue book")
+
 
 class ReturnBookWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
@@ -223,9 +258,11 @@ class ReturnBookWindow(ModelWindow):
         current_status = self.db_manager.get_property(id, "status")
         if current_status == "issued":
             self.db_manager.edit_book(id, "status", "available")
+
+            self.show_info("Return book", "Book successfully returned")
         else:
-            pass
-            # Message failed return
+            self.show_info("Return book", "Failed on return book")
+
 
 class MainWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
@@ -256,6 +293,10 @@ class MainWindow(ModelWindow):
     def add_book(self):
         self.add_book_window = AddBookWindow(self.db_manager, "Add Book", self.styles)
         self.add_book_window.show()
+
+    def remove_book(self):
+        self.remove_book_window = RemoveBookWindow(self.db_manager, "Remove Book", self.styles)
+        self.remove_book_window()
 
     def view_books(self):
         self.view_books_window = ViewBooksWindow(self.db_manager, "View Books", self.styles)
