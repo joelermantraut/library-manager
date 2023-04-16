@@ -30,12 +30,21 @@ class ManageBooksDatabase():
             self.run_cmd(cmd)
 
             return True
-        
+
         return False
     
     def edit_book(self, id, property, value):
         cmd = f"UPDATE {self.table} SET {property} = '{value}' WHERE bid = '{id}'"
+        return self.run_cmd(cmd)
+
+    def get_property(self, id, property):
+        cmd = f"SELECT {property} FROM {self.table} WHERE bid = {id}"
         self.run_cmd(cmd)
+
+        fetched_cursor = self.cur.fetchone()
+
+        if fetched_cursor:
+            return fetched_cursor[0]
 
     def list_books(self):
         cmd = f"SELECT * FROM {self.table}"
@@ -44,13 +53,18 @@ class ManageBooksDatabase():
         stringable_table = "BID\tTitle\tAuthor\tStatus\n"
 
         for i in self.cur:
-            stringable_table += f"{i[0]}\t\t{i[1]}\t\t{i[2]}\t\t{i[3]}\n"
+            stringable_table += f"{i[0]}\t{i[1]}\t{i[2]}\t{i[3]}\n"
 
         return stringable_table
     
     def delete_book(self, id):
         cmd = f"DELETE FROM {self.table} WHERE BID = {id}"
         self.run_cmd(cmd)
+
+        if self.cur.rowcount > 0:
+            return True
+        
+        return False
 
     
 def main():
@@ -61,7 +75,10 @@ def main():
 
     manage_database = ManageBooksDatabase(*content)
     manage_database.create_connection()
-    manage_database.insert_book("101", "Joel", "Author2")
+    manage_database.insert_book("101", "Joel", "Author2", "available")
+    print(manage_database.list_books())
+
+    manage_database.delete_book("102")
     print(manage_database.list_books())
 
 if __name__ == "__main__":
