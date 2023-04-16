@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QGridLayout, QLabel, QWidget, QPushButton,
-                             QLineEdit)
+                             QLineEdit, QMessageBox)
 from ManageDatabase import ManageBooksDatabase
 
 class ModelWindow(QMainWindow):
@@ -44,6 +44,11 @@ class ModelWindow(QMainWindow):
 
         return string
 
+    def show_info(self, title, message):
+        dialog = QMessageBox(parent=self, text=message)
+        dialog.setWindowTitle(title)
+        dialog.exec()   # Stores the return value for the button pressed
+
     def add_label(self, text):
         label = QLabel(text)
         label.setStyleSheet(self.styles_string())
@@ -59,9 +64,12 @@ class ModelWindow(QMainWindow):
 
         return btn
     
-    def add_line_edit(self):
+    def add_line_edit(self, command=None):
         line_edit = QLineEdit(self)
         line_edit.setStyleSheet("color: white;")
+
+        if command:
+            line_edit.textChanged.connect(command)
 
         return line_edit
 
@@ -115,7 +123,7 @@ class AddBookWindow(ModelWindow):
 
         if response:
             # Command successfull
-            pass
+            self.show_info("Book Added/Edited", "Book successfully added or edited")
 
 
 class ViewBooksWindow(ModelWindow):
@@ -127,16 +135,34 @@ class ViewBooksWindow(ModelWindow):
     def init_UI(self):
         layout = QVBoxLayout()
 
-        filter_entry = self.add_line_edit()
-        list_books_label = self.add_label("books -----------------------------")
+        self.filter_entry = self.add_line_edit(self.filter_entry_changed)
+        self.list_books_label = self.add_label("books -----------------------------")
 
-        layout.addWidget(filter_entry)
-        layout.addWidget(list_books_label)
+        layout.addWidget(self.filter_entry)
+        layout.addWidget(self.list_books_label)
 
         widget = QWidget()
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
+
+        self.list_books()
+
+    def list_books(self):
+        books_string = self.db_manager.list_books()
+        self.list_books_label.setText(books_string)
+
+    def filter_entry_changed(self):
+        entry_text = self.filter_entry.text()
+
+        books_string = self.db_manager.list_books().split("\n")
+
+        for index, line in enumerate(books_string):
+            pos = line.find(entry_text)
+            if pos == -1:
+                books_string.pop(index)
+
+        self.list_books_label.setText("\n".join(books_string))
 
 
 class IssueBookWindow(ModelWindow):
@@ -149,11 +175,11 @@ class IssueBookWindow(ModelWindow):
         layout = QGridLayout()
 
         book_ID_label = self.add_label("Book ID")
-        book_ID_entry = self.add_line_edit()
-        issue_book_btn = self.add_button("Issue Book")
+        self.book_ID_entry = self.add_line_edit()
+        issue_book_btn = self.add_button("Issue Book", self.issue_book)
 
         layout.addWidget(book_ID_label, 0, 0)
-        layout.addWidget(book_ID_entry, 0, 1)
+        layout.addWidget(self.book_ID_entry, 0, 1)
         layout.addWidget(issue_book_btn, 1, 0)
 
         widget = QWidget()
@@ -161,6 +187,14 @@ class IssueBookWindow(ModelWindow):
 
         self.setCentralWidget(widget)
 
+    def issue_book(self):
+        id = self.book_ID_entry.text()
+        current_status = self.db_manager.get_property(id, "status")
+        if current_status == "available":
+            self.db_manager.edit_book(id, "status", "issued")
+        else:
+            pass
+            # Message failed issued
 
 class ReturnBookWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
@@ -172,11 +206,11 @@ class ReturnBookWindow(ModelWindow):
         layout = QGridLayout()
 
         book_ID_label = self.add_label("Book ID")
-        book_ID_entry = self.add_line_edit()
-        return_book_btn = self.add_button("Return Book")
+        self.book_ID_entry = self.add_line_edit()
+        return_book_btn = self.add_button("Return Book", self.return_book)
 
         layout.addWidget(book_ID_label, 0, 0)
-        layout.addWidget(book_ID_entry, 0, 1)
+        layout.addWidget(self.book_ID_entry, 0, 1)
         layout.addWidget(return_book_btn, 1, 0)
 
         widget = QWidget()
@@ -184,6 +218,14 @@ class ReturnBookWindow(ModelWindow):
 
         self.setCentralWidget(widget)
 
+    def return_book(self):
+        id = self.book_ID_entry.text()
+        current_status = self.db_manager.get_property(id, "status")
+        if current_status == "issued":
+            self.db_manager.edit_book(id, "status", "available")
+        else:
+            pass
+            # Message failed return
 
 class MainWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
