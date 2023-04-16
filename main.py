@@ -1,10 +1,13 @@
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QGridLayout, QLabel, QWidget, QPushButton,
                              QLineEdit)
+from ManageDatabase import ManageBooksDatabase
 
 class ModelWindow(QMainWindow):
-    def __init__(self, title, styles: dict=None):
+    def __init__(self, db_manager: ManageBooksDatabase, title, styles: dict=None):
         super().__init__()
+
+        self.db_manager = db_manager
 
         self.x = 100
         self.y = 100
@@ -58,13 +61,14 @@ class ModelWindow(QMainWindow):
     
     def add_line_edit(self):
         line_edit = QLineEdit(self)
+        line_edit.setStyleSheet("color: white;")
 
         return line_edit
 
 
 class AddBookWindow(ModelWindow):
-    def __init__(self, title, styles=None):
-        super().__init__(title, styles)
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
 
         self.init_UI()
 
@@ -74,30 +78,49 @@ class AddBookWindow(ModelWindow):
         book_title_label = self.add_label("Title")
         book_author_label = self.add_label("Author")
         book_status_label = self.add_label("Status")
+        add_book_btn = self.add_button("Add Book", self.add_book)
 
-        book_ID_entry = self.add_line_edit()
-        book_title_entry = self.add_line_edit()
-        book_author_entry = self.add_line_edit()
-        book_status_entry = self.add_line_edit()
+        self.book_ID_entry = self.add_line_edit()
+        self.book_title_entry = self.add_line_edit()
+        self.book_author_entry = self.add_line_edit()
+        self.book_status_entry = self.add_line_edit()
 
         layout.addWidget(book_ID_label, 0, 0)
-        layout.addWidget(book_ID_entry, 0, 1)
+        layout.addWidget(self.book_ID_entry, 0, 1)
         layout.addWidget(book_title_label, 1, 0)
-        layout.addWidget(book_title_entry, 1, 1)
+        layout.addWidget(self.book_title_entry, 1, 1)
         layout.addWidget(book_author_label, 2, 0)
-        layout.addWidget(book_author_entry, 2, 1)
+        layout.addWidget(self.book_author_entry, 2, 1)
         layout.addWidget(book_status_label, 3, 0)
-        layout.addWidget(book_status_entry, 3, 1)
+        layout.addWidget(self.book_status_entry, 3, 1)
+        layout.addWidget(add_book_btn, 4, 0)
 
         widget = QWidget()
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
 
+    def add_book(self):
+        id = self.book_ID_entry.text()
+        title = self.book_title_entry.text()
+        author = self.book_author_entry.text()
+        status = self.book_status_entry.text()
+
+        response = self.db_manager.insert_book(id, title, author, status)
+        if not response:
+            # If response is False, is because book ID already exists
+            self.db_manager.edit_book(id, "title", title)
+            self.db_manager.edit_book(id, "author", author)
+            response = self.db_manager.edit_book(id, "status", status)
+
+        if response:
+            # Command successfull
+            pass
+
 
 class ViewBooksWindow(ModelWindow):
-    def __init__(self, title, styles=None):
-        super().__init__(title, styles)
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
 
         self.init_UI()
 
@@ -109,7 +132,7 @@ class ViewBooksWindow(ModelWindow):
 
         layout.addWidget(filter_entry)
         layout.addWidget(list_books_label)
-        
+
         widget = QWidget()
         widget.setLayout(layout)
 
@@ -117,8 +140,8 @@ class ViewBooksWindow(ModelWindow):
 
 
 class IssueBookWindow(ModelWindow):
-    def __init__(self, title, styles=None):
-        super().__init__(title, styles)
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
 
         self.init_UI()
 
@@ -140,8 +163,8 @@ class IssueBookWindow(ModelWindow):
 
 
 class ReturnBookWindow(ModelWindow):
-    def __init__(self, title, styles=None):
-        super().__init__(title, styles)
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
 
         self.init_UI()
 
@@ -163,8 +186,8 @@ class ReturnBookWindow(ModelWindow):
 
 
 class MainWindow(ModelWindow):
-    def __init__(self, title, styles=None):
-        super().__init__(title, styles)
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
 
         self.init_UI()
 
@@ -189,26 +212,37 @@ class MainWindow(ModelWindow):
         # Start with main window
 
     def add_book(self):
-        self.add_book_window = AddBookWindow("Add Book", self.styles)
+        self.add_book_window = AddBookWindow(self.db_manager, "Add Book", self.styles)
         self.add_book_window.show()
 
     def view_books(self):
-        self.view_books_window = ViewBooksWindow("View Books", self.styles)
+        self.view_books_window = ViewBooksWindow(self.db_manager, "View Books", self.styles)
         self.view_books_window.show()
 
     def issue_book(self):
-        self.issue_book_window = IssueBookWindow("Issue Book", self.styles)
+        self.issue_book_window = IssueBookWindow(self.db_manager, "Issue Book", self.styles)
         self.issue_book_window.show()
 
     def return_book(self):
-        self.return_book_window = ReturnBookWindow("Return Book", self.styles)
+        self.return_book_window = ReturnBookWindow(self.db_manager, "Return Book", self.styles)
         self.return_book_window.show()
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication([])
 
-    window = MainWindow("Library Manager")
+    with open(".credentials", "r") as file:
+        content = file.read()
+    content = content.split(",")
+    # Parse credentials from file
+
+    manage_database = ManageBooksDatabase(*content)
+    manage_database.create_connection()
+
+    window = MainWindow(manage_database, "Library Manager")
     window.show()
 
     app.exec()
+
+if __name__ == "__main__":
+    main()
