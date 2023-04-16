@@ -13,22 +13,29 @@ class ManageBooksDatabase():
         self.cur = self.con.cursor()
 
     def run_cmd(self, cmd):
-        self.cur.execute(cmd)
-        self.con.commit()
+        try:
+            self.cur.execute(cmd)
+            self.con.commit()
+            return True
+        except:
+            return False
 
-    def insert_book(self, id, title, author):
+    def insert_book(self, id, title, author, status):
         cmd = f"SELECT * FROM {self.table} WHERE bid = {id}"
         self.run_cmd(cmd)
 
         if self.cur.fetchone() == None:
             # Table not contains elements with that id
-            cmd = f"INSERT INTO {self.table} (bid, title, author, status) VALUES ('{id}', '{title}', '{author}', 'available')"
+            cmd = f"INSERT INTO {self.table} (bid, title, author, status) VALUES ('{id}', '{title}', '{author}', '{status}')"
             self.run_cmd(cmd)
-        else:
-            cmd = f"UPDATE {self.table} SET title = '{title}' WHERE bid = '{id}'"
-            self.run_cmd(cmd)
-            cmd = f"UPDATE {self.table} SET author = '{author}' WHERE bid = '{id}'"
-            self.run_cmd(cmd)
+
+            return True
+        
+        return False
+    
+    def edit_book(self, id, property, value):
+        cmd = f"UPDATE {self.table} SET {property} = '{value}' WHERE bid = '{id}'"
+        self.run_cmd(cmd)
 
     def list_books(self):
         cmd = f"SELECT * FROM {self.table}"
