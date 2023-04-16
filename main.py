@@ -27,13 +27,12 @@ class ModelWindow(QMainWindow):
             "font": "bold 20px Arial",
             "border": "1px solid cyan"
         }
-        self.styles = self.set_styles(styles)
+        self.styles = self.set_styles(self.DEFAULT_STYLES, styles)
 
-    def set_styles(self, styles):
+    def set_styles(self, default_styles, styles):
         if not isinstance(styles, dict):
-            return self.DEFAULT_STYLES
+            return default_styles
             
-        default_styles = self.DEFAULT_STYLES
         for style in styles.keys():
             if style in default_styles.keys():
                 default_styles[style] = styles[style]
@@ -49,13 +48,17 @@ class ModelWindow(QMainWindow):
     def show_info(self, title, message):
         QMessageBox.about(None, title, message)
 
-    def add_label(self, text):
+    def add_label(self, text, styles=None):
+        styles = self.set_styles(self.styles, styles)
+
         label = QLabel(text)
         label.setStyleSheet(self.styles_string())
 
         return label
     
-    def add_button(self, text, command=None):
+    def add_button(self, text, command=None, styles=None):
+        styles = self.set_styles(self.styles, styles)
+
         btn = QPushButton(text)
         btn.setStyleSheet(self.styles_string())
 
@@ -64,7 +67,9 @@ class ModelWindow(QMainWindow):
 
         return btn
     
-    def add_line_edit(self, command=None):
+    def add_line_edit(self, command=None, styles=None):
+        styles = self.set_styles(self.styles, styles)
+
         line_edit = QLineEdit(self)
         line_edit.setStyleSheet("color: white;")
 
