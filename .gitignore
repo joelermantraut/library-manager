@@ -221,4 +221,5 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,git,virtualenv
 
-.credentials
+.credentials-books
+.credentials-students
