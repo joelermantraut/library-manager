@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QGridLayout, QLabel, QWidget, QPushButton,
                              QLineEdit, QMessageBox)
-from PyQt6.QtCore import QCoreApplication
+from PyQt6 import QtCore
 
 from ManageDatabase import ManageBooksDatabase
 
@@ -13,8 +13,8 @@ class ModelWindow(QMainWindow):
 
         self.x = 100
         self.y = 100
-        self.width = 700
-        self.height = 500
+        self.width = 500
+        self.height = 200
 
         # Set window parameters
         self.setWindowTitle(title)
@@ -24,8 +24,9 @@ class ModelWindow(QMainWindow):
         self.DEFAULT_STYLES = {
             "background-color": "black",
             "color": "white",
-            "font": "bold 20px Arial",
-            "border": "1px solid cyan"
+            "font": "bold 16px Timer New Roman",
+            "border": "1px solid cyan",
+            "padding": "10px"
         }
         self.styles = self.set_styles(self.DEFAULT_STYLES, styles)
 
@@ -40,8 +41,8 @@ class ModelWindow(QMainWindow):
 
         return default_styles
     
-    def styles_string(self):
-        string = ";".join([f"{key}:{value}" for key, value in self.styles.items()])
+    def styles_string(self, styles):
+        string = ";".join([f"{key}:{value}" for key, value in styles.items()])
 
         return string
 
@@ -52,7 +53,8 @@ class ModelWindow(QMainWindow):
         styles = self.set_styles(self.styles, styles)
 
         label = QLabel(text)
-        label.setStyleSheet(self.styles_string())
+        label.setStyleSheet(self.styles_string(self.styles))
+        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         return label
     
@@ -60,7 +62,7 @@ class ModelWindow(QMainWindow):
         styles = self.set_styles(self.styles, styles)
 
         btn = QPushButton(text)
-        btn.setStyleSheet(self.styles_string())
+        btn.setStyleSheet(self.styles_string(self.styles))
 
         if command:
             btn.clicked.connect(command)
@@ -71,7 +73,8 @@ class ModelWindow(QMainWindow):
         styles = self.set_styles(self.styles, styles)
 
         line_edit = QLineEdit(self)
-        line_edit.setStyleSheet("color: white;")
+        line_edit.setStyleSheet(self.styles_string(self.styles))
+        line_edit.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         if command:
             line_edit.textChanged.connect(command)
@@ -106,7 +109,7 @@ class AddBookWindow(ModelWindow):
         layout.addWidget(self.book_author_entry, 2, 1)
         layout.addWidget(book_status_label, 3, 0)
         layout.addWidget(self.book_status_entry, 3, 1)
-        layout.addWidget(add_book_btn, 4, 0)
+        layout.addWidget(add_book_btn, 4, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -129,7 +132,6 @@ class AddBookWindow(ModelWindow):
             self.show_info("Book Added/Edited", "Failed on add or edit book")
 
         if response:
-            # Command successfull
             self.show_info("Book Added/Edited", "Book successfully added or edited")
 
 
@@ -143,7 +145,7 @@ class ViewBooksWindow(ModelWindow):
         layout = QVBoxLayout()
 
         self.filter_entry = self.add_line_edit(self.filter_entry_changed)
-        self.list_books_label = self.add_label("books -----------------------------")
+        self.list_books_label = self.add_label("", {"font": "bold 11px Arial"})
 
         layout.addWidget(self.filter_entry)
         layout.addWidget(self.list_books_label)
@@ -187,7 +189,7 @@ class RemoveBookWindow(ModelWindow):
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
-        layout.addWidget(issue_book_btn, 1, 0)
+        layout.addWidget(issue_book_btn, 1, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -218,7 +220,7 @@ class IssueBookWindow(ModelWindow):
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
-        layout.addWidget(issue_book_btn, 1, 0)
+        layout.addWidget(issue_book_btn, 1, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -251,7 +253,7 @@ class ReturnBookWindow(ModelWindow):
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
-        layout.addWidget(return_book_btn, 1, 0)
+        layout.addWidget(return_book_btn, 1, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -278,6 +280,7 @@ class MainWindow(ModelWindow):
     def init_UI(self):
         title_label = self.add_label("Library Manager")
         add_book_btn = self.add_button("Add/Edit Book", self.add_book)
+        remote_book_btn = self.add_button("Remove Book", self.remove_book)
         view_books_btn = self.add_button("View Books", self.view_books)
         issue_book_btn = self.add_button("Issue Book", self.issue_book)
         return_book_btn = self.add_button("Return Book", self.return_book)
@@ -285,6 +288,7 @@ class MainWindow(ModelWindow):
         layout = QVBoxLayout()
         layout.addWidget(title_label)
         layout.addWidget(add_book_btn)
+        layout.addWidget(remote_book_btn)
         layout.addWidget(view_books_btn)
         layout.addWidget(issue_book_btn)
         layout.addWidget(return_book_btn)
@@ -301,7 +305,7 @@ class MainWindow(ModelWindow):
 
     def remove_book(self):
         self.remove_book_window = RemoveBookWindow(self.db_manager, "Remove Book", self.styles)
-        self.remove_book_window()
+        self.remove_book_window.show()
 
     def view_books(self):
         self.view_books_window = ViewBooksWindow(self.db_manager, "View Books", self.styles)
