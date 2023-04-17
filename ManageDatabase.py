@@ -19,26 +19,29 @@ class ManageBooksDatabase():
             return True
         except:
             return False
-
-    def insert_book(self, id, title, author, status):
-        cmd = f"SELECT * FROM {self.table} WHERE bid = {id}"
+    
+    def insert_book(self, properties):
+        # First property is primary key
+        first_key, first_value = list(properties.items())[0]
+        cmd = f"SELECT * FROM {self.table} WHERE {first_key} = {first_value}"
         self.run_cmd(cmd)
 
         if self.cur.fetchone() == None:
             # Table not contains elements with that id
-            cmd = f"INSERT INTO {self.table} (bid, title, author, status) VALUES ('{id}', '{title}', '{author}', '{status}')"
+            keys_without_quotes = str(tuple(properties.keys())).replace("'", "")
+            cmd = f"INSERT INTO {self.table} {keys_without_quotes} VALUES {tuple(properties.values())}"
             self.run_cmd(cmd)
 
             return True
-
+        
         return False
     
-    def edit_book(self, id, property, value):
-        cmd = f"UPDATE {self.table} SET {property} = '{value}' WHERE bid = '{id}'"
+    def edit_book(self, primary_key, id, property, value):
+        cmd = f"UPDATE {self.table} SET {property} = '{value}' WHERE {primary_key} = '{id}'"
         return self.run_cmd(cmd)
 
-    def get_property(self, id, property):
-        cmd = f"SELECT {property} FROM {self.table} WHERE bid = {id}"
+    def get_property(self, primary_key, id, property):
+        cmd = f"SELECT {property} FROM {self.table} WHERE {primary_key} = {id}"
         self.run_cmd(cmd)
 
         fetched_cursor = self.cur.fetchone()
@@ -50,15 +53,15 @@ class ManageBooksDatabase():
         cmd = f"SELECT * FROM {self.table}"
         self.run_cmd(cmd)
 
-        stringable_table = "BID\tTitle\tAuthor\tStatus\n"
+        stringable_table = "BID\t\tTitle\t\tAuthor\t\tStatus\n"
 
         for i in self.cur:
-            stringable_table += f"{i[0]}\t{i[1]}\t{i[2]}\t{i[3]}\n"
+            stringable_table += f"{i[0]}\t\t{i[1]}\t\t{i[2]}\t\t{i[3]}\n"
 
         return stringable_table
     
-    def delete_book(self, id):
-        cmd = f"DELETE FROM {self.table} WHERE BID = {id}"
+    def delete_book(self, key, value):
+        cmd = f"DELETE FROM {self.table} WHERE {key} = {value}"
         self.run_cmd(cmd)
 
         if self.cur.rowcount > 0:
@@ -75,10 +78,10 @@ def main():
 
     manage_database = ManageBooksDatabase(*content)
     manage_database.create_connection()
-    manage_database.insert_book("101", "Joel", "Author2", "available")
+    manage_database.insert_book({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
     print(manage_database.list_books())
 
-    manage_database.delete_book("102")
+    manage_database.delete_book("bid", "102")
     print(manage_database.list_books())
 
 if __name__ == "__main__":
