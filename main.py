@@ -1,7 +1,9 @@
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QGridLayout, QLabel, QWidget, QPushButton,
-                             QLineEdit, QMessageBox)
+                             QLineEdit, QMessageBox, QFrame)
 from PyQt6 import QtCore
+
+import time
 
 from ManageDatabase import ManageBooksDatabase
 
@@ -275,6 +277,8 @@ class MainWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
         super().__init__(db_manager, title, styles)
 
+        self.windows = list()
+
         self.init_UI()
 
     def init_UI(self):
@@ -285,8 +289,13 @@ class MainWindow(ModelWindow):
         issue_book_btn = self.add_button("Issue Book", self.issue_book)
         return_book_btn = self.add_button("Return Book", self.return_book)
 
+        frame = QFrame()
+        frame.setFrameShape(QFrame.Shape.VLine)
+        frame.setFrameShadow(QFrame.Shadow.Sunken)
+
         layout = QVBoxLayout()
         layout.addWidget(title_label)
+        layout.addWidget(frame)
         layout.addWidget(add_book_btn)
         layout.addWidget(remote_book_btn)
         layout.addWidget(view_books_btn)
@@ -299,25 +308,35 @@ class MainWindow(ModelWindow):
         self.setCentralWidget(widget)
         # Start with main window
 
+    def open_window_if_not_other_opened(self, window):
+        for w in self.windows:
+            if w and w != window and w.isVisible():
+                return False
+
+        if not window in self.windows:
+            self.windows.append(window)
+
+        window.show()
+
     def add_book(self):
         self.add_book_window = AddBookWindow(self.db_manager, "Add Book", self.styles)
-        self.add_book_window.show()
+        self.open_window_if_not_other_opened(self.add_book_window)
 
     def remove_book(self):
         self.remove_book_window = RemoveBookWindow(self.db_manager, "Remove Book", self.styles)
-        self.remove_book_window.show()
+        self.open_window_if_not_other_opened(self.remove_book_window)
 
     def view_books(self):
         self.view_books_window = ViewBooksWindow(self.db_manager, "View Books", self.styles)
-        self.view_books_window.show()
+        self.open_window_if_not_other_opened(self.view_books_window)
 
     def issue_book(self):
         self.issue_book_window = IssueBookWindow(self.db_manager, "Issue Book", self.styles)
-        self.issue_book_window.show()
+        self.open_window_if_not_other_opened(self.issue_book_window)
 
     def return_book(self):
         self.return_book_window = ReturnBookWindow(self.db_manager, "Return Book", self.styles)
-        self.return_book_window.show()
+        self.open_window_if_not_other_opened(self.return_book_window)
 
 
 def main():
