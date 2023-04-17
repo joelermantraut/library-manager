@@ -23,8 +23,12 @@ class ManageBooksDatabase():
     def insert(self, properties):
         # First property is primary key
         first_key, first_value = list(properties.items())[0]
-        cmd = f"SELECT * FROM {self.table} WHERE {first_key} = {first_value}"
-        self.run_cmd(cmd)
+        cmd = f"SELECT * FROM {self.table} WHERE {first_key} = '{first_value}'"
+        print(cmd)
+        response = self.run_cmd(cmd)
+
+        if not response:
+            return None
 
         if self.cur.fetchone() == None:
             # Table not contains elements with that id
@@ -71,7 +75,7 @@ class ManageBooksDatabase():
 
     
 def main():
-    with open(".credentials", "r") as file:
+    with open(".credentials-books", "r") as file:
         content = file.read()
     content = content.split(",")
     # Parse credentials from file
@@ -79,10 +83,10 @@ def main():
     manage_database = ManageBooksDatabase(*content)
     manage_database.create_connection()
     manage_database.insert({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
-    print(manage_database.list_books())
+    print(manage_database.list())
 
     manage_database.delete("bid", "102")
-    print(manage_database.list_books())
+    print(manage_database.list())
 
 if __name__ == "__main__":
     main()
