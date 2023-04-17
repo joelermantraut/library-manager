@@ -129,10 +129,13 @@ class AddBookWindow(ModelWindow):
             self.db_manager.edit("bid", id, "author", author)
             response = self.db_manager.edit("bid", id, "status", status)
 
-            self.show_info("Book Added/Edited", "Failed on add or edit book")
+            if not response:
+                self.show_info("Book Added/Edited", "Failed on add or edit book")
+            else:
+                self.show_info("Book Added/Edited", "Successfully edited book")
 
         if response:
-            self.show_info("Book Added/Edited", "Book successfully added or edited")
+            self.show_info("Book Added/Edited", "Book successfully added")
 
 
 class ViewBooksWindow(ModelWindow):
@@ -341,7 +344,7 @@ class MainWindow(ModelWindow):
 def main():
     app = QApplication([])
 
-    with open(".credentials", "r") as file:
+    with open(".credentials-books", "r") as file:
         content = file.read()
     content = content.split(",")
     # Parse credentials from file
