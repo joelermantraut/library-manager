@@ -3,8 +3,6 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QLineEdit, QMessageBox, QFrame)
 from PyQt6 import QtCore
 
-import time
-
 from ManageDatabase import ManageBooksDatabase
 
 class ModelWindow(QMainWindow):
@@ -124,12 +122,12 @@ class AddBookWindow(ModelWindow):
         author = self.book_author_entry.text()
         status = self.book_status_entry.text()
 
-        response = self.db_manager.insert_book(id, title, author, status)
+        response = self.db_manager.insert({"bid": id, "title": title, "author": author, "status": status})
         if not response:
             # If response is False, is because book ID already exists
-            self.db_manager.edit_book(id, "title", title)
-            self.db_manager.edit_book(id, "author", author)
-            response = self.db_manager.edit_book(id, "status", status)
+            self.db_manager.edit("bid", id, "title", title)
+            self.db_manager.edit("bid", id, "author", author)
+            response = self.db_manager.edit("bid", id, "status", status)
 
             self.show_info("Book Added/Edited", "Failed on add or edit book")
 
@@ -160,13 +158,13 @@ class ViewBooksWindow(ModelWindow):
         self.list_books()
 
     def list_books(self):
-        books_string = self.db_manager.list_books()
+        books_string = self.db_manager.list()
         self.list_books_label.setText(books_string)
 
     def filter_entry_changed(self):
         entry_text = self.filter_entry.text()
 
-        books_string = self.db_manager.list_books().split("\n")
+        books_string = self.db_manager.list().split("\n")
 
         for index, line in enumerate(books_string):
             pos = line.find(entry_text)
@@ -200,7 +198,7 @@ class RemoveBookWindow(ModelWindow):
 
     def remove_book(self):
         id = self.book_ID_entry.text()
-        response = self.db_manager.delete_book(id)
+        response = self.db_manager.delete("bid", id)
         if response:
             self.show_info("Book deleted", "Book successfully deleted")
         else:
@@ -231,9 +229,9 @@ class IssueBookWindow(ModelWindow):
 
     def issue_book(self):
         id = self.book_ID_entry.text()
-        current_status = self.db_manager.get_property(id, "status")
+        current_status = self.db_manager.get_property("bid", id, "status")
         if current_status == "available":
-            self.db_manager.edit_book(id, "status", "issued")
+            self.db_manager.edit("bid", id, "status", "issued")
 
             self.show_info("Book issued", "Book successfully issued")
         else:
@@ -264,9 +262,9 @@ class ReturnBookWindow(ModelWindow):
 
     def return_book(self):
         id = self.book_ID_entry.text()
-        current_status = self.db_manager.get_property(id, "status")
+        current_status = self.db_manager.get_property("bid", id, "status")
         if current_status == "issued":
-            self.db_manager.edit_book(id, "status", "available")
+            self.db_manager.edit("bid", id, "status", "available")
 
             self.show_info("Return book", "Book successfully returned")
         else:
@@ -278,11 +276,12 @@ class MainWindow(ModelWindow):
         super().__init__(db_manager, title, styles)
 
         self.windows = list()
+        self.title = title
 
         self.init_UI()
 
     def init_UI(self):
-        title_label = self.add_label("Library Manager")
+        title_label = self.add_label(self.title)
         add_book_btn = self.add_button("Add/Edit Book", self.add_book)
         remote_book_btn = self.add_button("Remove Book", self.remove_book)
         view_books_btn = self.add_button("View Books", self.view_books)
