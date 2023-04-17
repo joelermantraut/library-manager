@@ -20,7 +20,7 @@ class ManageBooksDatabase():
         except:
             return False
     
-    def insert_book(self, properties):
+    def insert(self, properties):
         # First property is primary key
         first_key, first_value = list(properties.items())[0]
         cmd = f"SELECT * FROM {self.table} WHERE {first_key} = {first_value}"
@@ -36,7 +36,7 @@ class ManageBooksDatabase():
         
         return False
     
-    def edit_book(self, primary_key, id, property, value):
+    def edit(self, primary_key, id, property, value):
         cmd = f"UPDATE {self.table} SET {property} = '{value}' WHERE {primary_key} = '{id}'"
         return self.run_cmd(cmd)
 
@@ -49,7 +49,7 @@ class ManageBooksDatabase():
         if fetched_cursor:
             return fetched_cursor[0]
 
-    def list_books(self):
+    def list(self):
         cmd = f"SELECT * FROM {self.table}"
         self.run_cmd(cmd)
 
@@ -60,7 +60,7 @@ class ManageBooksDatabase():
 
         return stringable_table
     
-    def delete_book(self, key, value):
+    def delete(self, key, value):
         cmd = f"DELETE FROM {self.table} WHERE {key} = {value}"
         self.run_cmd(cmd)
 
@@ -78,10 +78,10 @@ def main():
 
     manage_database = ManageBooksDatabase(*content)
     manage_database.create_connection()
-    manage_database.insert_book({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
+    manage_database.insert({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
     print(manage_database.list_books())
 
-    manage_database.delete_book("bid", "102")
+    manage_database.delete("bid", "102")
     print(manage_database.list_books())
 
 if __name__ == "__main__":
