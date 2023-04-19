@@ -57,7 +57,7 @@ class ManageBooksDatabase():
         cmd = f"SELECT * FROM {self.table}"
         self.run_cmd(cmd)
 
-        stringable_table = "BID\t\tTitle\t\tAuthor\t\tStatus\n"
+        stringable_table = ""
 
         for i in self.cur:
             stringable_table += f"{i[0]}\t\t{i[1]}\t\t{i[2]}\t\t{i[3]}\n"
