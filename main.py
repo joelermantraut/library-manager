@@ -161,7 +161,8 @@ class ViewBooksWindow(ModelWindow):
         self.list_books()
 
     def list_books(self):
-        books_string = self.db_manager.list()
+        books_string = "BID\t\tTitle\t\tAuthor\t\tStatus\n"
+        books_string += self.db_manager.list()
         self.list_books_label.setText(books_string)
 
     def filter_entry_changed(self):
@@ -188,11 +189,11 @@ class RemoveBookWindow(ModelWindow):
 
         book_ID_label = self.add_label("Book ID")
         self.book_ID_entry = self.add_line_edit()
-        issue_book_btn = self.add_button("Remove Book", self.remove_book)
+        remove_book_btn = self.add_button("Remove Book", self.remove_book)
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
-        layout.addWidget(issue_book_btn, 1, 0, 1, 2)
+        layout.addWidget(remove_book_btn, 1, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
