@@ -124,15 +124,86 @@ class AddStudentWindow(ModelWindow):
             response = self.db_manager.edit(id, "last_name", last_name)
 
             if not response:
-                self.show_info("Book Added/Edited", "Failed on edit student")
+                self.show_info("Student Added/Edited", "Failed on edit student")
             else:
-                self.show_info("Book Added/Edited", "Successfully edited student")
+                self.show_info("Student Added/Edited", "Successfully edited student")
 
         elif response == None:
-            self.show_info("Book Added/Edited", "Failed on add student")
+            self.show_info("Student Added/Edited", "Failed on add student")
 
         if response:
-            self.show_info("Book Added/Edited", "Book successfully added")
+            self.show_info("Student Added/Edited", "Student successfully added")
+
+
+class RemoveStudentWindow(ModelWindow):
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
+
+        self.init_UI()
+
+    def init_UI(self):
+        layout = QGridLayout()
+
+        student_file_label = self.add_label("Student File")
+        self.student_file_entry = self.add_line_edit()
+        remove_student_btn = self.add_button("Remove Student", self.remove_student)
+
+        layout.addWidget(student_file_label, 0, 0)
+        layout.addWidget(self.student_file_entry, 0, 1)
+        layout.addWidget(remove_student_btn, 1, 0, 1, 2)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        self.setCentralWidget(widget)
+
+    def remove_student(self):
+        file = self.student_file_entry.text()
+        response = self.db_manager.delete("file", file)
+        if response:
+            self.show_info("Student deleted", "Student successfully deleted")
+        else:
+            self.show_info("Student deleted", "Failed on delete student")
+
+
+class ViewStudentsWindow(ModelWindow):
+    def __init__(self, db_manager, title, styles=None):
+        super().__init__(db_manager, title, styles)
+
+        self.init_UI()
+
+    def init_UI(self):
+        layout = QVBoxLayout()
+
+        self.filter_entry = self.add_line_edit(self.filter_entry_changed)
+        self.list_students_label = self.add_label("", {"font": "bold 11px Arial"})
+
+        layout.addWidget(self.filter_entry)
+        layout.addWidget(self.list_students_label)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        self.setCentralWidget(widget)
+
+        self.list_books()
+
+    def list_books(self):
+        students_string = "File\t\tFirst Name\t\tLast Name\t\tBID\n"
+        students_string += self.db_manager.list()
+        self.list_students_label.setText(students_string)
+
+    def filter_entry_changed(self):
+        entry_text = self.filter_entry.text()
+
+        students_string = self.db_manager.list().split("\n")
+
+        for index, line in enumerate(students_string):
+            pos = line.find(entry_text)
+            if pos == -1:
+                students_string.pop(index)
+
+        self.list_students_label.setText("\n".join(students_string))
 
 
 class StudentsMainWindow(ModelWindow):
@@ -148,7 +219,7 @@ class StudentsMainWindow(ModelWindow):
         title_label = self.add_label(self.title)
         add_student_btn = self.add_button("Add/Edit Student", self.add_student)
         remote_student_btn = self.add_button("Remove Student", self.remove_student)
-        view_students_btn = self.add_button("View Books", self.view_students)
+        view_students_btn = self.add_button("View Students", self.view_students)
 
         frame = QFrame()
         frame.setFrameShape(QFrame.Shape.VLine)
@@ -182,10 +253,12 @@ class StudentsMainWindow(ModelWindow):
         self.open_window_if_not_other_opened(self.add_book_window)
 
     def remove_student(self):
-        pass
+        self.remove_student_window = RemoveStudentWindow(self.db_manager, "Remove Student", self.styles)
+        self.open_window_if_not_other_opened(self.remove_student_window)
 
     def view_students(self):
-        pass
+        self.view_students_window = ViewStudentsWindow(self.db_manager, "View Students", self.styles)
+        self.open_window_if_not_other_opened(self.view_students_window)
 
 
 def main():
