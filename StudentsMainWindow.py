@@ -166,7 +166,8 @@ class RemoveStudentWindow(ModelWindow):
 
     def remove_student(self):
         file = self.student_file_entry.text()
-        response = self.db_manager.delete("file", file)
+        self.db_manager.delete("file", file)
+        response = self.db_manager.delete_table(f"student{file}")
         if response:
             self.show_info("Student deleted", "Student successfully deleted")
         else:
