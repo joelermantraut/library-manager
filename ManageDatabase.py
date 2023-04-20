@@ -19,12 +19,23 @@ class ManageBooksDatabase():
             return True
         except:
             return False
+        
+    def create_table(self, name, properties):
+        cmd = f"CREATE TABLE {name} ({','.join(properties)})"
+        response = self.run_cmd(cmd)
+
+        return response
+
+    def delete_table(self, name):
+        cmd = f"DROP TABLE {name}"
+        response = self.run_cmd(cmd)
+
+        return response
     
     def insert(self, properties):
         # First property is primary key
         first_key, first_value = list(properties.items())[0]
         cmd = f"SELECT * FROM {self.table} WHERE {first_key} = '{first_value}'"
-        print(cmd)
         response = self.run_cmd(cmd)
 
         if not response:
@@ -78,15 +89,17 @@ def main():
     with open(".credentials-books", "r") as file:
         content = file.read()
     content = content.split(",")
-    # Parse credentials from file
+    # # Parse credentials from file
 
     manage_database = ManageBooksDatabase(*content)
     manage_database.create_connection()
-    manage_database.insert({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
-    print(manage_database.list())
+    response = manage_database.create_table(f"student001", ["i INT AUTO_INCREMENT", "issue_date DATE", "return_date DATE", "PRIMARY KEY(i)"])
+    manage_database.delete_table("student001")
+    # manage_database.insert({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
+    # print(manage_database.list())
 
-    manage_database.delete("bid", "102")
-    print(manage_database.list())
+    # manage_database.delete("bid", "102")
+    # print(manage_database.list())
 
 if __name__ == "__main__":
     main()
