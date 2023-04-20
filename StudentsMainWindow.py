@@ -118,21 +118,28 @@ class AddStudentWindow(ModelWindow):
         last_name = self.last_name_entry.text()
 
         response = self.db_manager.insert({"file": file, "first_name": first_name, "last_name": last_name, "bids": "0"})
-        if response == False:
+        if response:
+            response = self.db_manager.create_table(f"student{file}", [
+                "i INT AUTO_INCREMENT",
+                "issue_date DATE",
+                "return_date DATE",
+                "PRIMARY KEY(i)"
+                ]
+            )
+
+            self.show_info("Student Added/Edited", "Student successfully added")
+        elif response == False:
             # If response is False, is because book ID already exists
             self.db_manager.edit(id, "first_name", first_name)
-            response = self.db_manager.edit(id, "last_name", last_name)
+            self.db_manager.edit(id, "last_name", last_name)
 
             if not response:
                 self.show_info("Student Added/Edited", "Failed on edit student")
             else:
                 self.show_info("Student Added/Edited", "Successfully edited student")
 
-        elif response == None:
+        else:
             self.show_info("Student Added/Edited", "Failed on add student")
-
-        if response:
-            self.show_info("Student Added/Edited", "Student successfully added")
 
 
 class RemoveStudentWindow(ModelWindow):
