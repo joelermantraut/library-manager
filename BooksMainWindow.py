@@ -16,13 +16,11 @@ class AddBookWindow(ModelWindow):
         book_ID_label = self.add_label("Book ID")
         book_title_label = self.add_label("Title")
         book_author_label = self.add_label("Author")
-        book_status_label = self.add_label("Status")
         add_book_btn = self.add_button("Add Book", self.add_book)
 
         self.book_ID_entry = self.add_line_edit()
         self.book_title_entry = self.add_line_edit()
         self.book_author_entry = self.add_line_edit()
-        self.book_status_entry = self.add_line_edit()
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
@@ -30,8 +28,6 @@ class AddBookWindow(ModelWindow):
         layout.addWidget(self.book_title_entry, 1, 1)
         layout.addWidget(book_author_label, 2, 0)
         layout.addWidget(self.book_author_entry, 2, 1)
-        layout.addWidget(book_status_label, 3, 0)
-        layout.addWidget(self.book_status_entry, 3, 1)
         layout.addWidget(add_book_btn, 4, 0, 1, 2)
 
         widget = QWidget()
@@ -43,14 +39,13 @@ class AddBookWindow(ModelWindow):
         id = self.book_ID_entry.text()
         title = self.book_title_entry.text()
         author = self.book_author_entry.text()
-        status = self.book_status_entry.text()
+        status = "None"
 
         response = self.db_manager.insert(self.BOOKS_TABLE, {"bid": id, "title": title, "author": author, "status": status})
         if not response:
             # If response is False, is because book ID already exists
             self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "title", title)
-            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "author", author)
-            response = self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", status)
+            response = self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "author", author)
 
             if not response:
                 self.show_info("Book Added/Edited", "Failed on add or edit book")
@@ -162,8 +157,8 @@ class IssueBookWindow(ModelWindow):
         id = self.book_ID_entry.text()
         file = self.student_file_entry.text()
         current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
-        if current_status == "available":
-            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", "issued")
+        if current_status == "None":
+            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", file)
 
             self.db_manager.insert(f"student{file}", {"bid": id, "issue_date": "2023-04-20", "return_date": "2023-05-20"})
             # Inserts book issued in students table
@@ -184,22 +179,30 @@ class ReturnBookWindow(ModelWindow):
 
         book_ID_label = self.add_label("Book ID")
         self.book_ID_entry = self.add_line_edit()
+        get_students_issued_btn = self.add_button("Get student that issued", self.get_student_issued)
         return_book_btn = self.add_button("Return Book", self.return_book)
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
-        layout.addWidget(return_book_btn, 1, 0, 1, 2)
+        layout.addWidget(get_students_issued_btn, 1, 0)
+        layout.addWidget(return_book_btn, 1, 1)
 
         widget = QWidget()
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
 
+    def get_student_issued(self):
+        id = self.book_ID_entry.text()
+        current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
+        if current_status != "None":
+            self.book_ID_entry.setText(current_status)
+
     def return_book(self):
         id = self.book_ID_entry.text()
         current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
-        if current_status == "issued":
-            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", "available")
+        if current_status != "None":
+            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", "None")
 
             self.show_info("Return book", "Book successfully returned")
         else:
