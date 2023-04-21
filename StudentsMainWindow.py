@@ -10,6 +10,7 @@ class ModelWindow(QMainWindow):
         super().__init__()
 
         self.db_manager = db_manager
+        self.STUDENTS_TABLE = "students"
 
         self.x = 100
         self.y = 100
@@ -117,10 +118,11 @@ class AddStudentWindow(ModelWindow):
         first_name = self.first_name_entry.text()
         last_name = self.last_name_entry.text()
 
-        response = self.db_manager.insert({"file": file, "first_name": first_name, "last_name": last_name, "bids": "0"})
+        response = self.db_manager.insert(self.STUDENTS_TABLE, {"file": file, "first_name": first_name, "last_name": last_name})
         if response:
             response = self.db_manager.create_table(f"student{file}", [
                 "i INT AUTO_INCREMENT",
+                "bid INT",
                 "issue_date DATE",
                 "return_date DATE",
                 "PRIMARY KEY(i)"
@@ -130,8 +132,8 @@ class AddStudentWindow(ModelWindow):
             self.show_info("Student Added/Edited", "Student successfully added")
         elif response == False:
             # If response is False, is because book ID already exists
-            self.db_manager.edit(id, "first_name", first_name)
-            self.db_manager.edit(id, "last_name", last_name)
+            self.db_manager.edit(self.STUDENTS_TABLE, id, "first_name", first_name)
+            self.db_manager.edit(self.STUDENTS_TABLE, id, "last_name", last_name)
 
             if not response:
                 self.show_info("Student Added/Edited", "Failed on edit student")
@@ -166,7 +168,7 @@ class RemoveStudentWindow(ModelWindow):
 
     def remove_student(self):
         file = self.student_file_entry.text()
-        response = self.db_manager.delete("file", file)
+        response = self.db_manager.delete(self.STUDENTS_TABLE, "file", file)
         self.db_manager.delete_table(f"student{file}")
         if response:
             self.show_info("Student deleted", "Student successfully deleted")
@@ -194,17 +196,17 @@ class ViewStudentsWindow(ModelWindow):
 
         self.setCentralWidget(widget)
 
-        self.list_books()
+        self.list_students()
 
-    def list_books(self):
-        students_string = "File\t\tFirst Name\t\tLast Name\t\tBID\n"
-        students_string += self.db_manager.list()
+    def list_students(self):
+        students_string = "File\t\tFirst Name\t\tLast Name\n"
+        students_string += self.db_manager.list(self.STUDENTS_TABLE)
         self.list_students_label.setText(students_string)
 
     def filter_entry_changed(self):
         entry_text = self.filter_entry.text()
 
-        students_string = self.db_manager.list().split("\n")
+        students_string = self.db_manager.list(self.STUDENTS_TABLE).split("\n")
 
         for index, line in enumerate(students_string):
             pos = line.find(entry_text)

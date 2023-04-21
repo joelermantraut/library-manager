@@ -10,16 +10,13 @@ class ModelWindow(QMainWindow):
         super().__init__()
 
         self.db_manager = db_manager
+        self.BOOKS_TABLE = "books"
+        self.STUDENTS_TABLE = "students"
 
         self.x = 100
         self.y = 100
         self.width = 500
         self.height = 200
-
-        # Set window parameters
-        self.setWindowTitle(title)
-        self.setGeometry(self.x, self.y, self.width, self.height)
-        self.setStyleSheet("background-color: black")
 
         self.DEFAULT_STYLES = {
             "background-color": "black",
@@ -29,6 +26,11 @@ class ModelWindow(QMainWindow):
             "padding": "10px"
         }
         self.styles = self.set_styles(self.DEFAULT_STYLES, styles)
+
+        # Set window parameters
+        self.setWindowTitle(title)
+        self.setGeometry(self.x, self.y, self.width, self.height)
+        self.setStyleSheet("background-color: black")
 
     def set_styles(self, default_styles, styles):
         if not isinstance(styles, dict):
@@ -122,12 +124,12 @@ class AddBookWindow(ModelWindow):
         author = self.book_author_entry.text()
         status = self.book_status_entry.text()
 
-        response = self.db_manager.insert({"bid": id, "title": title, "author": author, "status": status})
+        response = self.db_manager.insert(self.BOOKS_TABLE, {"bid": id, "title": title, "author": author, "status": status})
         if not response:
             # If response is False, is because book ID already exists
-            self.db_manager.edit("bid", id, "title", title)
-            self.db_manager.edit("bid", id, "author", author)
-            response = self.db_manager.edit("bid", id, "status", status)
+            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "title", title)
+            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "author", author)
+            response = self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", status)
 
             if not response:
                 self.show_info("Book Added/Edited", "Failed on add or edit book")
@@ -162,13 +164,13 @@ class ViewBooksWindow(ModelWindow):
 
     def list_books(self):
         books_string = "BID\t\tTitle\t\tAuthor\t\tStatus\n"
-        books_string += self.db_manager.list()
+        books_string += self.db_manager.list(self.BOOKS_TABLE)
         self.list_books_label.setText(books_string)
 
     def filter_entry_changed(self):
         entry_text = self.filter_entry.text()
 
-        books_string = self.db_manager.list().split("\n")
+        books_string = self.db_manager.list(self.BOOKS_TABLE).split("\n")
 
         for index, line in enumerate(books_string):
             pos = line.find(entry_text)
@@ -202,7 +204,7 @@ class RemoveBookWindow(ModelWindow):
 
     def remove_book(self):
         id = self.book_ID_entry.text()
-        response = self.db_manager.delete("bid", id)
+        response = self.db_manager.delete(self.BOOKS_TABLE, "bid", id)
         if response:
             self.show_info("Book deleted", "Book successfully deleted")
         else:
@@ -220,11 +222,15 @@ class IssueBookWindow(ModelWindow):
 
         book_ID_label = self.add_label("Book ID")
         self.book_ID_entry = self.add_line_edit()
+        student_file_label = self.add_label("Student file")
+        self.student_file_entry = self.add_line_edit()
         issue_book_btn = self.add_button("Issue Book", self.issue_book)
 
         layout.addWidget(book_ID_label, 0, 0)
         layout.addWidget(self.book_ID_entry, 0, 1)
-        layout.addWidget(issue_book_btn, 1, 0, 1, 2)
+        layout.addWidget(student_file_label, 1, 0)
+        layout.addWidget(self.student_file_entry, 1, 1)
+        layout.addWidget(issue_book_btn, 2, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -233,9 +239,13 @@ class IssueBookWindow(ModelWindow):
 
     def issue_book(self):
         id = self.book_ID_entry.text()
-        current_status = self.db_manager.get_property("bid", id, "status")
+        file = self.student_file_entry.text()
+        current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
         if current_status == "available":
-            self.db_manager.edit("bid", id, "status", "issued")
+            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", "issued")
+
+            self.db_manager.insert(f"student{file}", {"bid": id, "issue_date": "2023-04-20", "return_date": "2023-05-20"})
+            # Inserts book issued in students table
 
             self.show_info("Book issued", "Book successfully issued")
         else:
@@ -266,9 +276,9 @@ class ReturnBookWindow(ModelWindow):
 
     def return_book(self):
         id = self.book_ID_entry.text()
-        current_status = self.db_manager.get_property("bid", id, "status")
+        current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
         if current_status == "issued":
-            self.db_manager.edit("bid", id, "status", "available")
+            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", "available")
 
             self.show_info("Return book", "Book successfully returned")
         else:
