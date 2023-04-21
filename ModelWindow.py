@@ -9,6 +9,7 @@ class ModelWindow(QMainWindow):
         super().__init__()
 
         self.db_manager = db_manager
+        self.BOOKS_TABLE = "books"
         self.STUDENTS_TABLE = "students"
 
         self.x = 100
