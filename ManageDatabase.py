@@ -6,7 +6,6 @@ class ManageBooksDatabase():
         self.user = user
         self.password = password
         self.database = database
-        self.table = table
 
     def create_connection(self):
         self.con = pymysql.connect(host=self.host, user=self.user, password=self.password, database=self.database)
@@ -32,10 +31,10 @@ class ManageBooksDatabase():
 
         return response
     
-    def insert(self, properties):
+    def insert(self, table, properties):
         # First property is primary key
         first_key, first_value = list(properties.items())[0]
-        cmd = f"SELECT * FROM {self.table} WHERE {first_key} = '{first_value}'"
+        cmd = f"SELECT * FROM {table} WHERE {first_key} = '{first_value}'"
         response = self.run_cmd(cmd)
 
         if not response:
@@ -44,19 +43,19 @@ class ManageBooksDatabase():
         if self.cur.fetchone() == None:
             # Table not contains elements with that id
             keys_without_quotes = str(tuple(properties.keys())).replace("'", "")
-            cmd = f"INSERT INTO {self.table} {keys_without_quotes} VALUES {tuple(properties.values())}"
+            cmd = f"INSERT INTO {table} {keys_without_quotes} VALUES {tuple(properties.values())}"
             self.run_cmd(cmd)
 
             return True
         
         return False
     
-    def edit(self, primary_key, id, property, value):
-        cmd = f"UPDATE {self.table} SET {property} = '{value}' WHERE {primary_key} = '{id}'"
+    def edit(self, table, primary_key, id, property, value):
+        cmd = f"UPDATE {table} SET {property} = '{value}' WHERE {primary_key} = '{id}'"
         return self.run_cmd(cmd)
 
-    def get_property(self, primary_key, id, property):
-        cmd = f"SELECT {property} FROM {self.table} WHERE {primary_key} = {id}"
+    def get_property(self, table, primary_key, id, property):
+        cmd = f"SELECT {property} FROM {table} WHERE {primary_key} = {id}"
         self.run_cmd(cmd)
 
         fetched_cursor = self.cur.fetchone()
@@ -64,8 +63,8 @@ class ManageBooksDatabase():
         if fetched_cursor:
             return fetched_cursor[0]
 
-    def list(self):
-        cmd = f"SELECT * FROM {self.table}"
+    def list(self, table):
+        cmd = f"SELECT * FROM {table}"
         self.run_cmd(cmd)
 
         stringable_table = ""
@@ -75,8 +74,8 @@ class ManageBooksDatabase():
 
         return stringable_table
     
-    def delete(self, key, value):
-        cmd = f"DELETE FROM {self.table} WHERE {key} = {value}"
+    def delete(self, table, key, value):
+        cmd = f"DELETE FROM {table} WHERE {key} = {value}"
         self.run_cmd(cmd)
 
         if self.cur.rowcount > 0:
@@ -95,11 +94,6 @@ def main():
     manage_database.create_connection()
     response = manage_database.create_table(f"student001", ["i INT AUTO_INCREMENT", "issue_date DATE", "return_date DATE", "PRIMARY KEY(i)"])
     manage_database.delete_table("student001")
-    # manage_database.insert({"bid": "102", "title": "Joel", "author": "Author2", "status": "available"})
-    # print(manage_database.list())
-
-    # manage_database.delete("bid", "102")
-    # print(manage_database.list())
 
 if __name__ == "__main__":
     main()
