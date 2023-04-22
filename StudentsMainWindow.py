@@ -89,12 +89,18 @@ class RemoveStudentWindow(ModelWindow):
 
     def remove_student(self):
         file = self.student_file_entry.text()
-        response = self.db_manager.delete(self.STUDENTS_TABLE, "file", file)
-        self.db_manager.delete_table(f"student{file}")
-        if response:
-            self.show_info("Student deleted", "Student successfully deleted")
+
+        user_password = self.run_password_manager()
+        current_password = self.db_manager.get_property("passwords", "id", "1", "pass")
+        if user_password == current_password:
+            response = self.db_manager.delete(self.STUDENTS_TABLE, "file", file)
+            self.db_manager.delete_table(f"student{file}")
+            if response:
+                self.show_info("Student deleted", "Student successfully deleted")
+            else:
+                self.show_info("Student deleted", "Failed on delete student")
         else:
-            self.show_info("Student deleted", "Failed on delete student")
+            self.show_info("Password incorrect", "Introduced password is not correct")
 
 
 class ViewStudentsWindow(ModelWindow):
