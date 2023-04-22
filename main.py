@@ -10,6 +10,7 @@ class MainWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
         super().__init__(db_manager, title, styles)
 
+        self.windows = list()
         self.title = title
 
         self.init_UI()
