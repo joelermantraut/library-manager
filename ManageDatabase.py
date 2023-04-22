@@ -54,8 +54,8 @@ class ManageBooksDatabase():
         cmd = f"UPDATE {table} SET {property} = '{value}' WHERE {primary_key} = '{id}'"
         return self.run_cmd(cmd)
 
-    def get_property(self, table, primary_key, id, property):
-        cmd = f"SELECT {property} FROM {table} WHERE {primary_key} = {id}"
+    def get_property(self, table, primary_key, primary_value, property):
+        cmd = f"SELECT {property} FROM {table} WHERE {primary_key} = {primary_value}"
         self.run_cmd(cmd)
 
         fetched_cursor = self.cur.fetchone()
