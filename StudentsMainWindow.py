@@ -169,16 +169,6 @@ class StudentsMainWindow(ModelWindow):
         self.setCentralWidget(widget)
         # Start with main window
 
-    def open_window_if_not_other_opened(self, window):
-        for w in self.windows:
-            if w and w != window and w.isVisible():
-                return False
-
-        if not window in self.windows:
-            self.windows.append(window)
-
-        window.show()
-
     def add_student(self):
         self.add_book_window = AddStudentWindow(self.db_manager, "Add Book", self.styles)
         self.open_window_if_not_other_opened(self.add_book_window)

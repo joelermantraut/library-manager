@@ -10,7 +10,6 @@ class MainWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
         super().__init__(db_manager, title, styles)
 
-        self.windows = list()
         self.title = title
 
         self.init_UI()
@@ -32,16 +31,6 @@ class MainWindow(ModelWindow):
 
         self.setCentralWidget(widget)
         # Start with main window
-
-    def open_window_if_not_other_opened(self, window):
-        for w in self.windows:
-            if w and w != window and w.isVisible():
-                return False
-
-        if not window in self.windows:
-            self.windows.append(window)
-
-        window.show()
 
     def open_books_manager(self):
         self.books_window = BooksMainWindow(self.db_manager, "Books Manager")

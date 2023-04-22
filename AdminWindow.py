@@ -36,16 +36,6 @@ class AdminMainWindow(ModelWindow):
         self.setCentralWidget(widget)
         # Start with main window
 
-    def open_window_if_not_other_opened(self, window):
-        for w in self.windows:
-            if w and w != window and w.isVisible():
-                return False
-
-        if not window in self.windows:
-            self.windows.append(window)
-
-        window.show()
-
     def edit_pass(self):
         old_pass = self.old_pass_entry.text()
         new_pass = self.new_pass_entry.text()

@@ -18,6 +18,8 @@ class ModelWindow(QMainWindow):
         self.width = 500
         self.height = 200
 
+        self.windows = list()
+
         # Set window parameters
         self.setWindowTitle(title)
         self.setGeometry(self.x, self.y, self.width, self.height)
@@ -82,3 +84,13 @@ class ModelWindow(QMainWindow):
             line_edit.textChanged.connect(command)
 
         return line_edit
+    
+    def open_window_if_not_other_opened(self, window):
+        for w in self.windows:
+            if w and w != window and w.isVisible():
+                return False
+
+        if not window in self.windows:
+            self.windows.append(window)
+
+        window.show()
