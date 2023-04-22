@@ -120,11 +120,17 @@ class RemoveBookWindow(ModelWindow):
 
     def remove_book(self):
         id = self.book_ID_entry.text()
-        response = self.db_manager.delete(self.BOOKS_TABLE, "bid", id)
-        if response:
-            self.show_info("Book deleted", "Book successfully deleted")
+
+        user_password = self.run_password_manager()
+        current_password = self.db_manager.get_property("passwords", "id", "1", "pass")
+        if user_password == current_password:
+            response = self.db_manager.delete(self.BOOKS_TABLE, "bid", id)
+            if response:
+                self.show_info("Book deleted", "Book successfully deleted")
+            else:
+                self.show_info("Book deleted", "Failed on delete book")
         else:
-            self.show_info("Book deleted", "Failed on delete book")
+            self.show_info("Password incorrect", "Introduced password is not correct")
 
 
 class IssueBookWindow(ModelWindow):
