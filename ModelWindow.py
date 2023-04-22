@@ -27,7 +27,7 @@ class ModelWindow(QMainWindow):
             QInputDialog *{color: white;border: 1px solid white;padding: .5em;};
             background-color: black;
         """)
-        
+
         self.DEFAULT_STYLES = {
             "background-color": "black",
             "color": "white",
@@ -37,14 +37,14 @@ class ModelWindow(QMainWindow):
         }
         self.styles = self.set_styles(self.DEFAULT_STYLES, styles)
 
-
     def set_styles(self, default_styles, styles):
         if not isinstance(styles, dict):
             return default_styles
-            
+        
+        default_styles = default_styles.copy()
+
         for style in styles.keys():
-            if style in default_styles.keys():
-                default_styles[style] = styles[style]
+            default_styles[style] = styles[style]
         # Replace new styles, and set others to default
 
         return default_styles
@@ -65,11 +65,12 @@ class ModelWindow(QMainWindow):
         return None
 
     def add_label(self, text, styles=None):
+        styles = {"border": "none", "border-left": "3px solid teal", "border-bottom": "3px solid teal"}
         styles = self.set_styles(self.styles, styles)
 
         label = QLabel(text)
-        label.setStyleSheet(self.styles_string(self.styles))
-        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        label.setStyleSheet(self.styles_string(styles))
+        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         return label
     
@@ -77,7 +78,7 @@ class ModelWindow(QMainWindow):
         styles = self.set_styles(self.styles, styles)
 
         btn = QPushButton(text)
-        btn.setStyleSheet(self.styles_string(self.styles))
+        btn.setStyleSheet(self.styles_string(styles))
 
         if command:
             btn.clicked.connect(command)
@@ -85,10 +86,11 @@ class ModelWindow(QMainWindow):
         return btn
     
     def add_line_edit(self, command=None, styles=None):
+        styles = {"border": "none", "border-bottom": "2px dotted teal"}
         styles = self.set_styles(self.styles, styles)
 
         line_edit = QLineEdit(self)
-        line_edit.setStyleSheet(self.styles_string(self.styles))
+        line_edit.setStyleSheet(self.styles_string(styles))
         line_edit.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         if command:
