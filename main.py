@@ -4,6 +4,7 @@ from ManageDatabase import ManageBooksDatabase
 from ModelWindow import ModelWindow
 from BooksMainWindow import BooksMainWindow
 from StudentsMainWindow import StudentsMainWindow
+from AdminWindow import AdminMainWindow
 
 class MainWindow(ModelWindow):
     def __init__(self, db_manager, title, styles=None):
@@ -18,11 +19,13 @@ class MainWindow(ModelWindow):
         title_label = self.add_label(self.title)
         books_manager_btn = self.add_button("Open Books Manager", self.open_books_manager)
         students_manager_btn = self.add_button("Open Students Manager", self.open_students_manager)
+        admin_manager_btn = self.add_button("Open Admin Manager", self.open_admin_manager)
 
         layout = QVBoxLayout()
         layout.addWidget(title_label)
         layout.addWidget(books_manager_btn)
         layout.addWidget(students_manager_btn)
+        layout.addWidget(admin_manager_btn)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -47,6 +50,10 @@ class MainWindow(ModelWindow):
     def open_students_manager(self):
         self.students_window = StudentsMainWindow(self.db_manager, "Students Manager")
         self.open_window_if_not_other_opened(self.students_window)
+
+    def open_admin_manager(self):
+        self.admin_window = AdminMainWindow(self.db_manager, "Admin Manager")
+        self.open_window_if_not_other_opened(self.admin_window)
 
 def main():
     app = QApplication([])

@@ -11,6 +11,7 @@ class ModelWindow(QMainWindow):
         self.db_manager = db_manager
         self.BOOKS_TABLE = "books"
         self.STUDENTS_TABLE = "students"
+        self.PASSWORD_TABLE = "passwords"
 
         self.x = 100
         self.y = 100
