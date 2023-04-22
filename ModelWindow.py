@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QMainWindow, QLabel, QPushButton,
-                             QLineEdit, QMessageBox)
+                             QLineEdit, QMessageBox, QInputDialog)
 from PyQt6 import QtCore
 
 from ManageDatabase import ManageBooksDatabase
@@ -23,8 +23,11 @@ class ModelWindow(QMainWindow):
         # Set window parameters
         self.setWindowTitle(title)
         self.setGeometry(self.x, self.y, self.width, self.height)
-        self.setStyleSheet("background-color: black")
-
+        self.setStyleSheet("""
+            QInputDialog *{color: white;border: 1px solid white;padding: .5em;};
+            background-color: black;
+        """)
+        
         self.DEFAULT_STYLES = {
             "background-color": "black",
             "color": "white",
@@ -33,6 +36,7 @@ class ModelWindow(QMainWindow):
             "padding": "10px"
         }
         self.styles = self.set_styles(self.DEFAULT_STYLES, styles)
+
 
     def set_styles(self, default_styles, styles):
         if not isinstance(styles, dict):
@@ -52,6 +56,13 @@ class ModelWindow(QMainWindow):
 
     def show_info(self, title, message):
         QMessageBox.about(None, title, message)
+
+    def run_password_manager(self):
+        qinputdialog = QInputDialog()
+        password, ok = qinputdialog.getText(self, "Password input", "Password: ", QLineEdit.EchoMode.Password)
+        if ok:
+            return password
+        return None
 
     def add_label(self, text, styles=None):
         styles = self.set_styles(self.styles, styles)
@@ -84,7 +95,7 @@ class ModelWindow(QMainWindow):
             line_edit.textChanged.connect(command)
 
         return line_edit
-    
+
     def open_window_if_not_other_opened(self, window):
         for w in self.windows:
             if w and w != window and w.isVisible():
