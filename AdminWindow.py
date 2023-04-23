@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import (QApplication, QVBoxLayout,
-                             QGridLayout, QWidget, QFrame)
+from PyQt6.QtWidgets import (QApplication, QGridLayout, QWidget, QLineEdit)
 
 from ManageDatabase import ManageBooksDatabase
 from ModelWindow import ModelWindow
@@ -18,8 +17,10 @@ class AdminMainWindow(ModelWindow):
         title_label = self.add_label(self.title)
         old_pass_label = self.add_label("Current Password")
         self.old_pass_entry = self.add_line_edit()
+        self.old_pass_entry.setEchoMode(QLineEdit.EchoMode.Password)
         new_pass_label = self.add_label("New Password")
         self.new_pass_entry = self.add_line_edit()
+        self.new_pass_entry.setEchoMode(QLineEdit.EchoMode.Password)
         edit_pass_btn = self.add_button("Edit Admin Password", self.edit_pass)
 
         layout = QGridLayout()
