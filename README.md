@@ -23,7 +23,7 @@ SHOW TABLES;
 
 Then, we must configure default password:
 ```
-mysql -u nombre_usuario -p
+mysql -u user_name -p
 USE library;
 INSERT INTO passwords (pass) VALUES (1234);
 ```
