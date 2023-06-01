@@ -21,6 +21,13 @@ CREATE TABLE passwords(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, pass VARCHAR(
 SHOW TABLES;
 ```
 
+Then, we must configure default password:
+```
+mysql -u nombre_usuario -p
+USE library;
+INSERT INTO passwords (pass) VALUES (1234);
+```
+
 Running last command must show something like this:
 ```
 +-------------------+
