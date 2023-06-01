@@ -5,13 +5,11 @@ from PyQt6 import QtCore
 from ManageDatabase import ManageBooksDatabase
 
 class ModelWindow(QMainWindow):
-    def __init__(self, db_manager: ManageBooksDatabase, title, styles: dict=None):
+    def __init__(self, db_manager: ManageBooksDatabase, title, table, styles: dict=None):
         super().__init__()
 
         self.db_manager = db_manager
-        self.BOOKS_TABLE = "books"
-        self.STUDENTS_TABLE = "students"
-        self.PASSWORD_TABLE = "passwords"
+        self.table = table
 
         self.x = 100
         self.y = 100

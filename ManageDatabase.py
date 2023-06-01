@@ -1,7 +1,7 @@
 import pymysql
 
 class ManageBooksDatabase():
-    def __init__(self, host, user, password, database, table):
+    def __init__(self, host, user, password, database):
         self.host = host
         self.user = user
         self.password = password
@@ -18,7 +18,7 @@ class ManageBooksDatabase():
             return True
         except:
             return False
-        
+
     def create_table(self, name, properties):
         cmd = f"CREATE TABLE {name} ({','.join(properties)})"
         response = self.run_cmd(cmd)
@@ -30,7 +30,7 @@ class ManageBooksDatabase():
         response = self.run_cmd(cmd)
 
         return response
-    
+
     def insert(self, table, properties):
         # First property is primary key
         first_key, first_value = list(properties.items())[0]
@@ -44,12 +44,13 @@ class ManageBooksDatabase():
             # Table not contains elements with that id
             keys_without_quotes = str(tuple(properties.keys())).replace("'", "")
             cmd = f"INSERT INTO {table} {keys_without_quotes} VALUES {tuple(properties.values())}"
+            print(cmd)
             self.run_cmd(cmd)
 
             return True
-        
+
         return False
-    
+
     def edit(self, table, primary_key, id, property, value):
         cmd = f"UPDATE {table} SET {property} = '{value}' WHERE {primary_key} = '{id}'"
         return self.run_cmd(cmd)
@@ -73,17 +74,17 @@ class ManageBooksDatabase():
             stringable_table += f"{i[0]}\t\t{i[1]}\t\t{i[2]}\t\t{i[3]}\n"
 
         return stringable_table
-    
+
     def delete(self, table, key, value):
         cmd = f"DELETE FROM {table} WHERE {key} = {value}"
         self.run_cmd(cmd)
 
         if self.cur.rowcount > 0:
             return True
-        
+
         return False
 
-    
+
 def main():
     with open(".credentials-books", "r") as file:
         content = file.read()

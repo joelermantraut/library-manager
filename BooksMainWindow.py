@@ -6,8 +6,10 @@ from ModelWindow import ModelWindow
 
 
 class AddBookWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
+
+        self.table = table
 
         self.init_UI()
 
@@ -39,13 +41,13 @@ class AddBookWindow(ModelWindow):
         id = self.book_ID_entry.text()
         title = self.book_title_entry.text()
         author = self.book_author_entry.text()
-        status = "None"
+        status = "0"
 
-        response = self.db_manager.insert(self.BOOKS_TABLE, {"bid": id, "title": title, "author": author, "status": status})
+        response = self.db_manager.insert(self.table, {"bid": id, "title": title, "author": author, "status": status})
         if not response:
             # If response is False, is because book ID already exists
-            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "title", title)
-            response = self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "author", author)
+            self.db_manager.edit(self.table, "bid", id, "title", title)
+            response = self.db_manager.edit(self.table, "bid", id, "author", author)
 
             if not response:
                 self.show_info("Book Added/Edited", "Failed on add or edit book")
@@ -57,8 +59,8 @@ class AddBookWindow(ModelWindow):
 
 
 class ViewBooksWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
 
         self.init_UI()
 
@@ -80,13 +82,13 @@ class ViewBooksWindow(ModelWindow):
 
     def list_books(self):
         books_string = "BID\t\tTitle\t\tAuthor\t\tStatus\n"
-        books_string += self.db_manager.list(self.BOOKS_TABLE)
+        books_string += self.db_manager.list(self.table)
         self.list_books_label.setText(books_string)
 
     def filter_entry_changed(self):
         entry_text = self.filter_entry.text()
 
-        books_string = self.db_manager.list(self.BOOKS_TABLE).split("\n")
+        books_string = self.db_manager.list(self.table).split("\n")
 
         for index, line in enumerate(books_string):
             pos = line.find(entry_text)
@@ -97,8 +99,8 @@ class ViewBooksWindow(ModelWindow):
 
 
 class RemoveBookWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
 
         self.init_UI()
 
@@ -124,7 +126,7 @@ class RemoveBookWindow(ModelWindow):
         user_password = self.run_password_manager()
         current_password = self.db_manager.get_property("passwords", "id", "1", "pass")
         if user_password == current_password:
-            response = self.db_manager.delete(self.BOOKS_TABLE, "bid", id)
+            response = self.db_manager.delete(self.table, "bid", id)
             if response:
                 self.show_info("Book deleted", "Book successfully deleted")
             else:
@@ -134,8 +136,8 @@ class RemoveBookWindow(ModelWindow):
 
 
 class IssueBookWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
 
         self.init_UI()
 
@@ -162,9 +164,9 @@ class IssueBookWindow(ModelWindow):
     def issue_book(self):
         id = self.book_ID_entry.text()
         file = self.student_file_entry.text()
-        current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
-        if current_status == "None":
-            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", file)
+        current_status = self.db_manager.get_property(self.table, "bid", id, "status")
+        if current_status == "0":
+            self.db_manager.edit(self.table, "bid", id, "status", file)
 
             self.db_manager.insert(f"student{file}", {"bid": id, "issue_date": "2023-04-20", "return_date": "2023-05-20"})
             # Inserts book issued in students table
@@ -175,8 +177,8 @@ class IssueBookWindow(ModelWindow):
 
 
 class ReturnBookWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
 
         self.init_UI()
 
@@ -200,15 +202,15 @@ class ReturnBookWindow(ModelWindow):
 
     def get_student_issued(self):
         id = self.book_ID_entry.text()
-        current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
-        if current_status != "None":
+        current_status = self.db_manager.get_property(self.table, "bid", id, "status")
+        if current_status != "0":
             self.book_ID_entry.setText(current_status)
 
     def return_book(self):
         id = self.book_ID_entry.text()
-        current_status = self.db_manager.get_property(self.BOOKS_TABLE, "bid", id, "status")
-        if current_status != "None":
-            self.db_manager.edit(self.BOOKS_TABLE, "bid", id, "status", "None")
+        current_status = self.db_manager.get_property(self.table, "bid", id, "status")
+        if current_status != "0":
+            self.db_manager.edit(self.table, "bid", id, "status", "0")
 
             self.show_info("Return book", "Book successfully returned")
         else:
@@ -216,8 +218,8 @@ class ReturnBookWindow(ModelWindow):
 
 
 class BooksMainWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
 
         self.windows = list()
         self.title = title
@@ -262,23 +264,23 @@ class BooksMainWindow(ModelWindow):
         window.show()
 
     def add_book(self):
-        self.add_book_window = AddBookWindow(self.db_manager, "Add Book", self.styles)
+        self.add_book_window = AddBookWindow(self.db_manager, "Add Book", self.table, self.styles)
         self.open_window_if_not_other_opened(self.add_book_window)
 
     def remove_book(self):
-        self.remove_book_window = RemoveBookWindow(self.db_manager, "Remove Book", self.styles)
+        self.remove_book_window = RemoveBookWindow(self.db_manager, "Remove Book", self.table, self.styles)
         self.open_window_if_not_other_opened(self.remove_book_window)
 
     def view_books(self):
-        self.view_books_window = ViewBooksWindow(self.db_manager, "View Books", self.styles)
+        self.view_books_window = ViewBooksWindow(self.db_manager, "View Books", self.table, self.styles)
         self.open_window_if_not_other_opened(self.view_books_window)
 
     def issue_book(self):
-        self.issue_book_window = IssueBookWindow(self.db_manager, "Issue Book", self.styles)
+        self.issue_book_window = IssueBookWindow(self.db_manager, "Issue Book", self.table, self.styles)
         self.open_window_if_not_other_opened(self.issue_book_window)
 
     def return_book(self):
-        self.return_book_window = ReturnBookWindow(self.db_manager, "Return Book", self.styles)
+        self.return_book_window = ReturnBookWindow(self.db_manager, "Return Book", self.table, self.styles)
         self.open_window_if_not_other_opened(self.return_book_window)
 
 
@@ -287,8 +289,7 @@ def main():
 
     with open(".credentials-books", "r") as file:
         content = file.read()
-    content = content.split(",")
-    # Parse credentials from file
+    content = content.split(",") # Parse credentials from file
 
     manage_database = ManageBooksDatabase(*content)
     manage_database.create_connection()

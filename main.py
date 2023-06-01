@@ -34,22 +34,22 @@ class MainWindow(ModelWindow):
         # Start with main window
 
     def open_books_manager(self):
-        self.books_window = BooksMainWindow(self.db_manager, "Books Manager")
+        self.books_window = BooksMainWindow(self.db_manager, "Books Manager", "books")
         self.open_window_if_not_other_opened(self.books_window)
 
     def open_students_manager(self):
-        self.students_window = StudentsMainWindow(self.db_manager, "Students Manager")
+        self.students_window = StudentsMainWindow(self.db_manager, "Students Manager", "students")
         self.open_window_if_not_other_opened(self.students_window)
 
     def open_admin_manager(self):
-        self.admin_window = AdminMainWindow(self.db_manager, "Admin Manager")
+        self.admin_window = AdminMainWindow(self.db_manager, "Admin Manager", "passwords")
         self.open_window_if_not_other_opened(self.admin_window)
 
 def main():
     app = QApplication([])
 
     with open(".credentials-books", "r") as file:
-        content = file.read()
+        content = file.read()[0:-1]
     content = content.split(",")
     # Parse credentials from file
 

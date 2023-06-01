@@ -5,9 +5,8 @@ from ModelWindow import ModelWindow
 
 
 class AdminMainWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
-
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
         self.windows = list()
         self.title = title
 
@@ -40,9 +39,9 @@ class AdminMainWindow(ModelWindow):
     def edit_pass(self):
         old_pass = self.old_pass_entry.text()
         new_pass = self.new_pass_entry.text()
-        db_pass = self.db_manager.get_property("passwords", "id", "1", "pass")
+        db_pass = self.db_manager.get_property(self.table, "id", "1", "pass")
         if db_pass == old_pass:
-            response = self.db_manager.edit("passwords", "id", "1", "pass", new_pass)
+            response = self.db_manager.edit(self.table, "id", "1", "pass", new_pass)
 
             if response:
                 self.show_info("Change Password", "Password successfully change")

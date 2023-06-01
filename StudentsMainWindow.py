@@ -5,8 +5,8 @@ from ManageDatabase import ManageBooksDatabase
 from ModelWindow import ModelWindow
 
 class AddStudentWindow(ModelWindow):
-    def __init__(self, db_manager, title, styles=None):
-        super().__init__(db_manager, title, styles)
+    def __init__(self, db_manager, title, table, styles=None):
+        super().__init__(db_manager, title, table, styles)
 
         self.init_UI()
 
@@ -39,7 +39,7 @@ class AddStudentWindow(ModelWindow):
         first_name = self.first_name_entry.text()
         last_name = self.last_name_entry.text()
 
-        response = self.db_manager.insert(self.STUDENTS_TABLE, {"file": file, "first_name": first_name, "last_name": last_name})
+        response = self.db_manager.insert(self.table, {"file": file, "first_name": first_name, "last_name": last_name})
         if response:
             response = self.db_manager.create_table(f"student{file}", [
                 "i INT AUTO_INCREMENT",
@@ -53,8 +53,8 @@ class AddStudentWindow(ModelWindow):
             self.show_info("Student Added/Edited", "Student successfully added")
         elif response == False:
             # If response is False, is because book ID already exists
-            self.db_manager.edit(self.STUDENTS_TABLE, id, "first_name", first_name)
-            self.db_manager.edit(self.STUDENTS_TABLE, id, "last_name", last_name)
+            self.db_manager.edit(self.table, id, "first_name", first_name)
+            self.db_manager.edit(self.table, id, "last_name", last_name)
 
             if not response:
                 self.show_info("Student Added/Edited", "Failed on edit student")
@@ -93,7 +93,7 @@ class RemoveStudentWindow(ModelWindow):
         user_password = self.run_password_manager()
         current_password = self.db_manager.get_property("passwords", "id", "1", "pass")
         if user_password == current_password:
-            response = self.db_manager.delete(self.STUDENTS_TABLE, "file", file)
+            response = self.db_manager.delete(self.table, "file", file)
             self.db_manager.delete_table(f"student{file}")
             if response:
                 self.show_info("Student deleted", "Student successfully deleted")
@@ -127,13 +127,13 @@ class ViewStudentsWindow(ModelWindow):
 
     def list_students(self):
         students_string = "File\t\tFirst Name\t\tLast Name\n"
-        students_string += self.db_manager.list(self.STUDENTS_TABLE)
+        students_string += self.db_manager.list(self.table)
         self.list_students_label.setText(students_string)
 
     def filter_entry_changed(self):
         entry_text = self.filter_entry.text()
 
-        students_string = self.db_manager.list(self.STUDENTS_TABLE).split("\n")
+        students_string = self.db_manager.list(self.table).split("\n")
 
         for index, line in enumerate(students_string):
             pos = line.find(entry_text)
